@@ -32,7 +32,6 @@ export async function startThreeHoursTask(delayMinutes = 30) {
 
     page = await loginAndNavigateToTrade(browser);
 
-    // 1. Universal Settlement Claim
     console.log("💰 [3HOURS TRADE] Checking for active settlements...");
     const settlementHandle = await page.$('.uit-order-lists__receive-btn-text') ||
                              await page.$('.trade-pos__claim') ||
@@ -43,7 +42,7 @@ export async function startThreeHoursTask(delayMinutes = 30) {
       await safeClick(page, settlementHandle);
       await new Promise((res) => setTimeout(res, 1500));
 
-      const confirmBtnHandle = await page.$('.btnConfirm');       if (confirmBtnHandle) {         await safeClick(page, confirmBtnHandle);         claimed = true;         console.log("✅ [3HOURS TRADE] Settlement modal confirmed!");       } else {         const fallbackConfirmed = await page.evaluate(() => {           const btn = document.querySelector('.btnConfirm') \vert{}\vert{}                        Array.from(document.querySelectorAll("uni-view")).find(                         (el) => el.classList.contains("btnConfirm") \vert{}\vert{} (el.innerText && el.innerText.trim().toUpperCase() === "CONFIRM")                       );           if (btn) {             ["pointerdown", "touchstart", "mousedown", "pointerup", "touchend", "mouseup", "click"].forEach((evt) => {               btn.dispatchEvent(new Event(evt, { bubbles: true, cancelable: true }));             });             return true;           }           return false;         });          if (fallbackConfirmed) {           claimed = true;           console.log("✅ [3HOURS TRADE] Modal confirmed via inner tree fallback!");         }       }        console.log("⏳ [3HOURS TRADE] Waiting 5 seconds for balance refresh...");       await new Promise((res) => setTimeout(res, 5000));     } else {       console.log("ℹ️ [3HOURS TRADE] No active settlement ready to claim.");     }      // 2. Strategy Selection ("3Hours" Standard Tab)     console.log("🎯 [3HOURS TRADE] Verifying 3Hours strategy tab...");     const durationTabs = await page.$$('.trade-dur');
+      const confirmBtnHandle = await page.$('.btnConfirm');       if (confirmBtnHandle) {         await safeClick(page, confirmBtnHandle);         claimed = true;         console.log("✅ [3HOURS TRADE] Settlement modal confirmed!");       } else {         const fallbackConfirmed = await page.evaluate(() => {           const btn = document.querySelector('.btnConfirm') \vert{}\vert{}                        Array.from(document.querySelectorAll("uni-view")).find(                         (el) => el.classList.contains("btnConfirm") \vert{}\vert{} (el.innerText && el.innerText.trim().toUpperCase() === "CONFIRM")                       );           if (btn) {             ["pointerdown", "touchstart", "mousedown", "pointerup", "touchend", "mouseup", "click"].forEach((evt) => {               btn.dispatchEvent(new Event(evt, { bubbles: true, cancelable: true }));             });             return true;           }           return false;         });          if (fallbackConfirmed) {           claimed = true;           console.log("✅ [3HOURS TRADE] Modal confirmed via inner tree fallback!");         }       }        console.log("⏳ [3HOURS TRADE] Waiting 5 seconds for balance refresh...");       await new Promise((res) => setTimeout(res, 5000));     } else {       console.log("ℹ️ [3HOURS TRADE] No active settlement ready to claim.");     }      console.log("🎯 [3HOURS TRADE] Verifying 3Hours strategy tab...");     const durationTabs = await page.$$('.trade-dur');
     for (const tab of durationTabs) {
       const text = await page.evaluate((el) => el.innerText.trim(), tab);
       if (text.toUpperCase().includes("3") && !text.toUpperCase().includes("PLUS")) {
@@ -63,7 +62,6 @@ export async function startThreeHoursTask(delayMinutes = 30) {
       }
     }
 
-    // 3. Read Remaining Balance & Reinvest (100% Uncapped Balance)
     console.log("💵 [3HOURS TRADE] Reading updated Available Balance...");
     const rawBalance = await page.evaluate(() => {
       const balanceNode = document.querySelector('.trade-inject-balance__num');
@@ -103,7 +101,6 @@ export async function startThreeHoursTask(delayMinutes = 30) {
       console.log("⚠️ [3HOURS TRADE] Available balance is 0 USD or insufficient.");
     }
 
-    // 4. Final Balance & Report Dispatch
     const finalBalance = await page.evaluate(() => {
       const balanceNode = document.querySelector('.trade-inject-balance__num');
       return balanceNode ? parseFloat(balanceNode.innerText.trim()) : 0;
